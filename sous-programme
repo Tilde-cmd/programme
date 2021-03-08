@@ -1,0 +1,137 @@
+subroutine lecture_donnees(M) 
+use m_type
+implicit none
+type(mes), intent(out) :: M
+open(10, file = "donnees.dat")
+read(10,*) M%Nx
+read(10,*) M%Ny
+read(10,*) M%CFL
+read(10,*) M%R
+read(10,*) M%D
+read(10,*) M%C0
+read(10,*) M%C1
+read(10,*) M%L
+read(10,*) M%g
+read(10,*) M%alpha
+
+ close(10)
+end subroutine lecture_donnees
+
+
+
+subroutine maillage(M)
+use m_type
+implicit none
+
+type(mes), intent(inout) :: M
+real, dimension(11,11) :: Yreg
+real, dimension(10,10)::Yreg2
+integer :: i, j
+real :: pi
+
+pi = acos(-1.)
+do j = 1, M%Ny+1
+  do i = 1, M%Nx+1
+    M%Xn(i,j) = M%L/M%Nx * real(i-1)
+  end do
+end do
+
+
+do j = 1, M%Ny
+  do i = 1, M%Nx
+    M%Xv(i,j) = M%Xn(i,j) + (M%Xn(i+1,j)-M%Xn(i,j))/2.
+  end do
+end do
+
+
+do j=1, M%Ny+1
+  do i=1, M%Nx+1
+    Yreg(i,j) = M%L/real((M%Ny)) * real(i-1)
+    M%Yn(i,j) = Yreg(i,j) + M%g*M%L*sin(2.*pi/M%L*Yreg(i,j))/(3.*pi)
+  end do
+end do
+
+
+
+do i=1, M%Nx
+  do j=1, M%Ny
+    Yreg2(i,j) = M%L/(M%Ny-1) * real(i-1)
+    M%Yv(i,j) = M%Yn(i,j) + (M%Yn(i,j+1)-M%Yn(i,j)) /2.
+  end do
+end do
+!print*, Yreg2
+!print*, M%Yv
+
+end subroutine maillage
+
+
+
+subroutine vitesses(M)
+use m_type 
+implicit none
+type(mes), intent(inout) :: M
+real :: pi
+integer :: i, j
+
+pi = acos(-1.)
+
+call maillage(M)
+
+do i=1, M%Nx
+  do j=1, M%Ny
+    M%uv(i,j) = M%alpha*sin(pi*M%Xv(i,j)/M%L)*cos(pi*M%Yv(i,j)/M%L)
+    M%vv(i,j) = -M%alpha*sin(pi*M%Yv(i,j)/M%L)*cos(pi*M%Xv(i,j)/M%L)
+  end do
+end do
+
+do i=1, M%Nx+1
+  do j=1, M%Ny+1
+    M%un(i,j) = M%alpha*sin(pi*M%Xn(i,j)/M%L)*cos(pi*M%Yn(i,j)/M%L)
+    M%vn(i,j) = -M%alpha*sin(pi*M%Yn(i,j)/M%L)*cos(pi*M%Xn(i,j)/M%L)
+  end do
+end do
+end subroutine vitesses
+
+
+!subroutine delta_temps(M)
+!use m_type 
+!implicit none
+!type(mes), intent(inout) :: M
+!integer :: i, j
+!real :: delta_x, delta_t
+
+!call maillage(M)
+!call vitesses(M)
+
+!delta_x = M%Xn(2,1) - M%Xn(1,1)
+!do i=1, M%Nx
+ ! do j=1, M%Ny-1
+  !  M%delta_y(i,j) = M%Yn(i,j+1) - M%Yn(i,j)
+   ! !print*, M%delta_y(i,j)
+    !M%d_t(i,j) = 1/ (abs(M%Uv(i,j))/(M%CFL*delta_x) + abs(M%Vv(i,j))/(M%CFL*M%delta_y(i,j)) + M%D/(M%R*delta_x**2) + & 
+!M%D/(M%R*M%delta_y(i,j)**2)) 
+ ! end do
+!end do
+!delta_t = minval(M%d_t)
+!print*, M%d_t
+!end subroutine delta_temps
+
+subroutine concentration(C,M)
+use m_type 
+implicit none
+type(mes), intent(inout) :: M
+real, dimension(10,10)::C
+integer :: i, j
+
+do i=1,M%Nx
+ do j=1,M%Ny
+  C(i,j)=0.
+ end do
+end do
+end subroutine concentration 
+
+
+
+
+
+
