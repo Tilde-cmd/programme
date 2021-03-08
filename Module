@@ -1,0 +1,10 @@
+module m_type
+implicit none
+
+type mes
+integer :: Nx, Ny
+real :: CFL, R, D, C0, C1, L, g, alpha
+real, dimension(:,:), allocatable :: Xn, Xv, Yn, Yv,un, uv, vn, vv, delta_y, d_t
+end type mes
+
+end module m_type
