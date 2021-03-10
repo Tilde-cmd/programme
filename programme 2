@@ -1,0 +1,34 @@
+program projet
+use m_type
+implicit none
+type (mes) :: M
+real, dimension(10,10)::C
+call lecture_donnees(M)
+call Concentration (C,M)
+allocate(M%Xn(M%Nx+1, M%Ny+1))
+allocate(M%Xv(M%Nx, M%Ny))
+allocate(M%Yn(M%Nx+1, M%Ny+1))
+allocate(M%Yv(M%Nx, M%Ny))
+call maillage(M)
+allocate(M%Uv(M%Nx, M%Ny))
+allocate(M%Vv(M%Nx, M%Ny))
+allocate(M%Un(M%Nx, M%Ny-1))
+allocate(M%Vn(M%Nx-1, M%Ny))
+call VTSWriter(10,1,M%Nx+1,M%Ny+1,M%Xn,M%Yn,C,M%un,M%vn,'ini')
+call VTSWriter(10,1,M%NX+1,M%Ny+1,M%Xn,M%Yn,C,M%un,M%vn,'int')
+allocate(M%delta_y(M%Nx, M%Ny))
+allocate(M%d_t(M%Nx, M%Ny-1))
+call vitesses(M)
+call delta_temps(M)
+call VTSWriter(10,1,M%NX+1,M%Ny+1,M%Xn,M%Yn,C,M%un,M%vn,'end')
+deallocate (M%Xn)
+deallocate (M%Xv)
+deallocate (M%Yn)
+deallocate (M%Yv)
+deallocate (M%Un)
+deallocate (M%Uv)
+deallocate (M%Vn)
+deallocate (M%Vv)
+deallocate (M%delta_y)
+deallocate (M%d_t)
+end program projet
